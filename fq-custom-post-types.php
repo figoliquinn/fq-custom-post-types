@@ -1,7 +1,7 @@
 <?php
 /*
 Plugin Name: FQ Custom Post Types
-Plugin URI: http://www.figoliquinn.com/
+Plugin URI: http://figoliquinn.github.io/fq-custom-post-types/
 Description: Easy way to add a custom post types
 Version: 1.0.0
 Author: Figoli Quinn
@@ -12,12 +12,6 @@ Copyright: Figoli Quinn
 defined( 'ABSPATH' ) or die( 'No access!' );
 
 
-
-
-function fq_custom_post_types_init() {
-
-}
-add_action( 'init', 'fq_custom_post_types_init' );
 
 
 
@@ -42,99 +36,23 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 
 
 	class FQ_Custom_Post_Type {
-	
-		public $meta_box_context = '';
-		public $meta_box_priority = '';
 
+		public $meta_box_context = 'normal'; // normal, side, advanced
+
+		public $meta_box_priority = 'high'; // default, low, high
 
 		public $post_type = 'item';
 
+		// Defaults are set in the cleanup_args() function
+		public $args = array();
 
-		public $labels = array(
-			'name'                  => 'Items',
-			'singular_name'         => 'Item',
-			'menu_name'             => 'Items',
-			'name_admin_bar'        => 'Item',
-			'archives'              => 'Item Archives',
-			'parent_item_colon'     => 'Parent Item:',
-			'all_items'             => 'All Items',
-			'add_new_item'          => 'Add New Item',
-			'add_new'               => 'Add New',
-			'new_item'              => 'New Item',
-			'edit_item'             => 'Edit Item',
-			'update_item'           => 'Update Item',
-			'view_item'             => 'View Item',
-			'search_items'          => 'Search Item',
-			'not_found'             => 'Not found',
-			'not_found_in_trash'    => 'Not found in Trash',
-			'featured_image'        => 'Featured Image',
-			'set_featured_image'    => 'Set featured image',
-			'remove_featured_image' => 'Remove featured image',
-			'use_featured_image'    => 'Use as featured image',
-			'insert_into_item'      => 'Insert into item',
-			'uploaded_to_this_item' => 'Uploaded to this Item',
-			'items_list'            => 'Items list',
-			'items_list_navigation' => 'Items list navigation',
-			'filter_items_list'     => 'Filter Items list',
-		);
-		
-		public $args = array(
-			'label'                 => 'Item',
-			'labels'                => array(), // see above
-			'supports'              => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'trackbacks', 'revisions', 'custom-fields', 'page-attributes', 'post-formats', ),
-			'hierarchical'          => true,
-			'public'                => true,
-			'show_ui'               => true,
-			'show_in_menu'          => true,
-			'menu_position'         => null,
-			'show_in_admin_bar'     => true,
-			'show_in_nav_menus'     => true,
-			'can_export'            => false,
-			'has_archive'           => false,		
-			'exclude_from_search'   => true,
-			'publicly_queryable'    => false,
-			'rewrite'               => false,
-			'capability_type'       => 'page', // or 'post'
-		);
-
-		public $taxonomy_labels = array(
-			'name'                       => 'Taxonomies',
-			'singular_name'              => 'Taxonomy',
-			'menu_name'                  => 'Taxonomies',
-			'all_items'                  => 'All Items',
-			'parent_item'                => 'Parent Item',
-			'parent_item_colon'          => 'Parent Item:',
-			'new_item_name'              => 'New Item Name',
-			'add_new_item'               => 'Add New Item',
-			'edit_item'                  => 'Edit Item',
-			'update_item'                => 'Update Item',
-			'view_item'                  => 'View Item',
-			'separate_items_with_commas' => 'Separate items with commas',
-			'add_or_remove_items'        => 'Add or remove items',
-			'choose_from_most_used'      => 'Choose from the most used',
-			'popular_items'              => 'Popular Items',
-			'search_items'               => 'Search Items',
-			'not_found'                  => 'Not Found',
-			'no_terms'                   => 'No items',
-			'items_list'                 => 'Items list',
-			'items_list_navigation'      => 'Items list navigation',
-		);
-
-		public $taxonomy_args = array(
-			'labels'                     => array(),
-			'hierarchical'               => true,
-			'public'                     => true,
-			'show_ui'                    => true,
-			'show_admin_column'          => true,
-			'show_in_nav_menus'          => true,
-			'show_tagcloud'              => true,
-		);
+		// Defaults are set in the cleanup_taxonomy_args() function
+		public $taxonomy_args = array();
 
 		public $admin_header_title = '';
 
 		public $admin_header_html = '';
-		
-		
+
 		public $custom_fields_title = 'Custom Fields';
 		
 		public $custom_fields = array(
@@ -171,18 +89,34 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 				'options'=>array('Yes','No','Maybe'),
 				'show_in_admin_list_callback'=>false,
 			),
+			'sample_wysiwyg'=>array(
+				'type'=>'wysiwyg',
+				'label'=>'Sample Wysiwyg',
+				'options'=>array('Yes','No','Maybe'),
+				'show_in_admin_list_callback'=>false,
+			),
 		);
 
+		public $notices = array();
+		/* For example:
+		$notices = array(
+			array('This is an error!','notice-error',true),
+			array('This is a warning!','notice-warning',true),
+			array('This is a success!','notice-success',true),
+		); // message, class, dismissable?
+		*/
 
-		function __construct($post_type,$args=array(),$labels=array()) {
+
+
+		function __construct($post_type,$args=array()) {
 			
 			$this->post_type = $post_type;
 			$this->args = $this->cleanup_args();
-			$this->args['labels'] = array_merge($this->args['labels'],$labels);
 			$this->args = array_merge($this->args,$args);
 			
-		} // end __construct
+			add_action( 'admin_notices', array($this,'plugin_admin_notices') );
 
+		} // end __construct
 
 
 
@@ -218,58 +152,6 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 
 
 
-		function cleanup_args() {
-			
-			$plural = ucwords($this->pluralize($this->post_type));
-			$singular = ucwords($this->post_type);
-			$auto_labels = array(
-				'name'                  => $plural,
-				'singular_name'         => $singular,
-				'menu_name'             => $plural,
-				'name_admin_bar'        => $singular,
-				'archives'              => $singular.' Archives',
-				'parent_item_colon'     => 'Parent '.$singular.': ',
-				'all_items'             => 'All '.$plural,
-				'add_new_item'          => 'Add New '.$singular,
-				'add_new'               => 'Add New',
-				'new_item'              => 'New '.$singular,
-				'edit_item'             => 'Edit '.$singular,
-				'update_item'           => 'Update '.$singular,
-				'view_item'             => 'View '.$singular,
-				'search_items'          => 'Search '.$singular,
-				'not_found'             => 'Not found',
-				'not_found_in_trash'    => 'Not found in Trash',
-				'featured_image'        => 'Featured Image',
-				'set_featured_image'    => 'Set featured image',
-				'remove_featured_image' => 'Remove featured image',
-				'use_featured_image'    => 'Use as featured image',
-				'insert_into_item'      => 'Insert into '.$singular,
-				'uploaded_to_this_item' => 'Uploaded to this '.$singular,
-				'items_list'            => $plural.' list',
-				'items_list_navigation' => $plural.' list navigation',
-				'filter_items_list'     => 'Filter '.$plural.' list',
-			);
-			$auto_args = array(
-				'label'                 => $singular,
-				'labels'                => $auto_labels,
-				'supports'              => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'trackbacks', 'revisions', 'custom-fields', 'page-attributes', 'post-formats', ),
-				'hierarchical'          => true,
-				'public'                => false,
-				'show_ui'               => true,
-				'show_in_menu'          => true,
-				'menu_position'         => null,
-				'show_in_admin_bar'     => true,
-				'show_in_nav_menus'     => true,
-				'can_export'            => false,
-				'has_archive'           => false,		
-				'exclude_from_search'   => true,
-				'publicly_queryable'    => false,
-				'rewrite'               => false,
-				'capability_type'       => 'page', // or 'post'
-			);
-			return $auto_args;
-			
-		}
 
 
 
@@ -519,98 +401,63 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 
 
 
-		function add_taxonomy( $taxonomy , $taxonomy_args = array() , $taxonomy_labels = array() ) {
+		function add_taxonomy( $taxonomy , $taxonomy_args = array() ) {
 			
-			$this->taxonomy_args = $this->cleanup_taxonomy_args($taxonomy,$taxonomy_args);
-			$this->taxonomy_args['labels'] = array_merge($this->taxonomy_args['labels'],$taxonomy_labels);
+			$this->taxonomy_args = $this->cleanup_taxonomy_args($taxonomy);
 			$this->taxonomy_args = array_merge($this->taxonomy_args,$taxonomy_args);
 
 			if( !taxonomy_exists( $taxonomy ) ) {
 
 				register_taxonomy( $taxonomy , $this->post_type , $this->taxonomy_args );
 			}
-	
 			return $this->taxonomy_args;
 
 		} // end add_taxonomy()
 		
-		function add_category( $taxonomy , $taxonomy_args = array() , $taxonomy_labels = array() ) {
+		function add_category( $taxonomy , $taxonomy_args = array() ) {
 
-			$this->add_taxonomy( $taxonomy , $taxonomy_args , $taxonomy_labels );
+			$this->add_taxonomy( $taxonomy , $taxonomy_args );
 		}
 		
-		function add_tag( $taxonomy , $taxonomy_args = array() , $taxonomy_labels = array() ) {
+		function add_tag( $taxonomy , $taxonomy_args = array() ) {
 			
 			$taxonomy_args['hierarchical'] = false;
-			$this->add_taxonomy( $taxonomy , $taxonomy_args , $taxonomy_labels );
-		}
-
-
-		function cleanup_taxonomy_args( $taxonomy , $taxonomy_args ) {
-		
-			$plural = ucwords($this->pluralize($taxonomy));
-			$singular = ucwords($taxonomy);
-
-			$auto_taxonomy_labels = array(
-				'name'                       => $plural,
-				'singular_name'              => $singular,
-				'menu_name'                  => $plural,
-				'all_items'                  => 'All '.$plural,
-				'parent_item'                => 'Parent '.$singular,
-				'parent_item_colon'          => 'Parent '.$singular.':',
-				'new_item_name'              => 'New '.$singular.' Name',
-				'add_new_item'               => 'Add New '.$singular,
-				'edit_item'                  => 'Edit '.$singular,
-				'update_item'                => 'Update '.$singular,
-				'view_item'                  => 'View '.$singular,
-				'separate_items_with_commas' => 'Separate '.$plural.' with commas',
-				'add_or_remove_items'        => 'Add or remove '.$plural,
-				'choose_from_most_used'      => 'Choose from the most used',
-				'popular_items'              => 'Popular '.$plural,
-				'search_items'               => 'Search '.$plural,
-				'not_found'                  => 'Not Found',
-				'no_terms'                   => 'No '.$plural,
-				'items_list'                 => $plural.' list',
-				'items_list_navigation'      => $plural.' list navigation',
-			);
-			$auto_taxonomy_args = array(
-				'labels'                     => $auto_taxonomy_labels,
-				'hierarchical'               => true,
-				'public'                     => true,
-				'show_ui'                    => true,
-				'show_admin_column'          => true,
-				'show_in_nav_menus'          => true,
-				'show_tagcloud'              => true,
-			);
-			return $auto_taxonomy_args;
-
+			$this->add_taxonomy( $taxonomy , $taxonomy_args );
 		}
 
 
 
 
-		function add_custom_fields() {
+
+
+		function add_custom_fields($custom_fields=array(),$title='') {
 			
-			add_action( 'add_meta_boxes', array( $this, 'add_meta_box' ) );
+			$this->custom_fields = $custom_fields;			
+			if($title) $this->custom_fields_title = $title;
+			add_action( 'add_meta_boxes', array( $this, 'cpt_add_meta_box' ) );
 			add_action( 'save_post', array( $this, 'save_meta_box' ) );
 		}
 		
 		
-		function add_meta_box() {
-
+		function cpt_add_meta_box() {
+			
+			if(!$this->custom_fields) return;
+			
 			add_meta_box(
 				$this->post_type.'_id' ,
 				$this->custom_fields_title,
 				array($this,'display_meta_box'),
 				$this->post_type,
-				'side',
-				'high'
+				$this->meta_box_context,
+				$this->meta_box_priority
 			);
-	
+
 		}
 		
 		
 		function display_meta_box( $post ) {
+
+			if(!$this->custom_fields) return;
 
 			# wp_nonce_field( $this->nonce_value , $this->nonce_field );
 
@@ -618,7 +465,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 			
 				$value = get_post_meta( $post->ID, $name , true );
 
-				echo '<div>';
+				echo '<br><div>';
 				switch ($custom_field['type']) {
 
 					case "select":
@@ -645,7 +492,8 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 							echo '<input name="'.$name.($custom_field['type']=="checkbox"?"[]":"").'" id="'.$name.'_'.$count.'" 
 								type="'.$custom_field['type'].'" '.$checked.' value="'.$val.'" />';
 							echo $label;
-							echo '</label><br/>';
+							echo '</label>';
+							echo $custom_field['inline'] ? '&nbsp;&nbsp;&nbsp;' : '<br>';
 						}
 					break;
 
@@ -670,7 +518,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 					break;
 
 					case 'wysiwyg':
-						echo '<label>' . $custom_field['label'] . '</label><br/><br/>';
+						echo '<label for="'.$name.'"><b>'.$custom_field['label'].'</b></label><br/>';
 						echo wp_editor($value, $name);
 					break;
 
@@ -679,7 +527,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 
 				}
 				echo "</div>";
-				echo "<hr />";
+				echo "<br><hr>";
 			
 			}
 
@@ -743,7 +591,119 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		}
 
 
+		function cleanup_args() {
+			
+			$plural = ucwords($this->pluralize($this->post_type));
+			$singular = ucwords($this->post_type);
+			$auto_args = array(
+				'label'                 => $singular,
+				'labels'                => array(
+					'name'                  => $plural,
+					'singular_name'         => $singular,
+					'menu_name'             => $plural,
+					'name_admin_bar'        => $singular,
+					'archives'              => $singular.' Archives',
+					'parent_item_colon'     => 'Parent '.$singular.': ',
+					'all_items'             => 'All '.$plural,
+					'add_new_item'          => 'Add New '.$singular,
+					'add_new'               => 'Add New',
+					'new_item'              => 'New '.$singular,
+					'edit_item'             => 'Edit '.$singular,
+					'update_item'           => 'Update '.$singular,
+					'view_item'             => 'View '.$singular,
+					'search_items'          => 'Search '.$singular,
+					'not_found'             => 'Not found',
+					'not_found_in_trash'    => 'Not found in Trash',
+					'featured_image'        => 'Featured Image',
+					'set_featured_image'    => 'Set featured image',
+					'remove_featured_image' => 'Remove featured image',
+					'use_featured_image'    => 'Use as featured image',
+					'insert_into_item'      => 'Insert into '.$singular,
+					'uploaded_to_this_item' => 'Uploaded to this '.$singular,
+					'items_list'            => $plural.' list',
+					'items_list_navigation' => $plural.' list navigation',
+					'filter_items_list'     => 'Filter '.$plural.' list',
+				),
+				'description'          	=> 'This is a custom post type.',
+				'public'                => true,	// default: false
+				#'has_archive'          => false,	// default: false		
+				#'exclude_from_search'	=> true,	// default: opposite of public setting
+				#'publicly_queryable'	=> false,	// default: same as public setting
+				#'show_ui'				=> false,	// default: same as public setting
+				#'show_in_nav_menus'	=> false,	// default: same as public setting
+				#'show_in_menu'			=> false,	// default: same as show_ui setting
+				#'show_in_admin_bar'	=> false,	// default: same as show_in_menu setting
+				#'menu_position'		=> null,
+				#'menu_icon'			=> null,
+				#'query_var'            => false,	// default: true
+				'capability_type'       => 'page', 	// default: post
+				'hierarchical'          => true,	// default: false
+				'supports'              => array( 'title', 'editor', 'excerpt', 'author', 'thumbnail', 'comments', 'trackbacks', 'revisions', 'custom-fields', 'page-attributes', 'post-formats', ),
+				'supports'              => array( 'title', 'editor', 'thumbnail'),
+				#'rewrite'               => false,	// default: true
+				#'can_export'            => false,	// default: true
+			);
+			return $auto_args;
+			
+		}
+
+		function cleanup_taxonomy_args( $taxonomy ) {
+		
+			$plural = ucwords($this->pluralize($taxonomy));
+			$singular = ucwords($taxonomy);
+			$auto_taxonomy_args = array(
+				'labels'                     => array(
+					'name'                       => $plural,
+					'singular_name'              => $singular,
+					'menu_name'                  => $plural,
+					'all_items'                  => 'All '.$plural,
+					'parent_item'                => 'Parent '.$singular,
+					'parent_item_colon'          => 'Parent '.$singular.':',
+					'new_item_name'              => 'New '.$singular.' Name',
+					'add_new_item'               => 'Add New '.$singular,
+					'edit_item'                  => 'Edit '.$singular,
+					'update_item'                => 'Update '.$singular,
+					'view_item'                  => 'View '.$singular,
+					'separate_items_with_commas' => 'Separate '.$plural.' with commas',
+					'add_or_remove_items'        => 'Add or remove '.$plural,
+					'choose_from_most_used'      => 'Choose from the most used',
+					'popular_items'              => 'Popular '.$plural,
+					'search_items'               => 'Search '.$plural,
+					'not_found'                  => 'Not Found',
+					'no_terms'                   => 'No '.$plural,
+					'items_list'                 => $plural.' list',
+					'items_list_navigation'      => $plural.' list navigation',
+				),
+				'hierarchical'               => true,
+				'public'                     => true,
+				'show_ui'                    => true,
+				'show_admin_column'          => true,
+				'show_in_nav_menus'          => true,
+				'show_tagcloud'              => true,
+			);
+			return $auto_taxonomy_args;
+
+		}
+
+
+		function plugin_admin_notices() {
+			
+			if(!$this->notices) return;
+			foreach($this->notices as $n => $notice) {			
+				echo '
+					<div class="notice '.$notice[1].' '.($notice[2]?'is-dismissible':'').'">
+						<p>'.$notice[0].'</p>
+					</div>
+				';	
+			}
+
+		}
+
+
+
+
 	} // end class
+
 
 
 	// example of custom columns display in the admin list	
@@ -752,6 +712,9 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		$value = get_post_meta( $id , $name , true );
 		if($value) echo date("m-d-y",$value);
 	}
+
+
+
 
 
 } // end if class exists
