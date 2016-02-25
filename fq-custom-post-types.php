@@ -390,8 +390,21 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 					call_user_func($this->custom_fields[$column_name]['show_in_admin_list_callback'],$column_name,$post_id);
 
 				} else {
-
-					echo get_post_meta($post_id,$column_name,true);
+					
+					switch ($this->custom_fields[$column_name]['type']) {
+						case 'relationship':
+							// Get the ID it's related to
+							$post_id = get_post_meta($post_id,$column_name,true);
+							
+							// Get the post so we can print the title of the post — much friendlier than the ID
+							$post = get_post($post_id);
+							echo $post->post_title;
+							break;
+							
+						default:
+							echo get_post_meta($post_id,$column_name,true);
+						
+					}
 				}
 		
 			}
@@ -644,6 +657,13 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 							// Since we're only storing the image object id, we need to fetch the object
 							$image = wp_get_attachment_image_url($value, 'thumbnail');
 							include('templates/meta_box/image.php');
+							break;
+							
+						case 'relationship':
+							// Get all items of that post type
+							$query = new WP_Query(array('post_type' => $custom_field['post_type'], 'post_per_page' => -1));
+							$posts = $query->get_posts();
+							include('templates/meta_box/relationship.php');
 							break;
 	
 						default:
