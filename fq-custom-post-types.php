@@ -12,6 +12,16 @@ Copyright: Figoli Quinn
 defined( 'ABSPATH' ) or die( 'No access!' );
 
 
+// enqueue JS files
+add_action( 'admin_enqueue_scripts', 'fq_custom_post_types_enqueue' );
+function fq_custom_post_types_enqueue($hook)
+{
+	if( $hook != 'edit.php' && $hook != 'post.php' && $hook != 'post-new.php' ) 
+		return;
+	
+	wp_enqueue_style( 'fq-image-uploader-style', plugin_dir_url(__FILE__ ) . 'css/fq-image-uploader.css', false, '1.0.0' );
+    wp_enqueue_script( 'fq-image-uploader', plugins_url( '/js/fq-image-uploader.js', __FILE__ ), array( 'jquery' ) );
+}
 
 
 
@@ -628,6 +638,12 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 	
 						case 'wysiwyg':
 							include('templates/meta_box/wysiwyg.php');
+							break;
+							
+						case 'image':
+							// Since we're only storing the image object id, we need to fetch the object
+							$image = wp_get_attachment_image_url($value, 'thumbnail');
+							include('templates/meta_box/image.php');
 							break;
 	
 						default:

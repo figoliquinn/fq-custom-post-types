@@ -1,0 +1,56 @@
+.clearfix {
+	overflow: auto;
+}
+
+.fq-image-field-row {
+	width: 100%;
+	float: left;
+}
+
+.fq-preview-image-wrapper {
+	display: none;
+	float: left;
+	margin-right: 8px;
+}
+
+.fq-preview-image-wrapper:hover .fq-remove-preview-image {
+	opacity: 0.25;
+}
+
+.fq-preview-image {
+	width: 75px;
+	height: 75px;
+	border: 3px solid #fff;
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+}
+
+.fq-remove-preview-image {
+	position: absolute;
+	left: 75px;
+	background: #fff;
+	color: #313131;
+	width: 20px;
+	height: 20px;
+	border: none;
+	padding: 0;
+	opacity: 0;
+	cursor: pointer;
+	-webkit-border-radius: 40px;
+	-moz-border-radius: 40px;
+	border-radius: 40px;
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+	-webkit-transition: all 0.2s ease-in-out;
+	-moz-transition: all 0.2s ease-in-out;
+	transition: all 0.2s ease-in-out;
+}
+
+.fq-remove-preview-image:hover {
+	opacity: 1 !important;
+	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.55);
+	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.55);
+	box-shadow: 0 1px 3px rgba(0,0,0,0.55);
+}
