@@ -8,5 +8,5 @@
  */
 ?>
 
-<label for="'.$name.'"><b><?php print $custom_field['label'];?></b></label><br/>
+<label for="'.$name.'"><b><?php print $custom_field['label'];?></b></label><br/><br/>
 <input type="text" id="<?php print $name;?>" name="<?php print $name;?>" value="<?php print $value;?>" style="width:100%;" />

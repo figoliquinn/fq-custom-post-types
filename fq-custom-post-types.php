@@ -96,7 +96,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		 * Registers the new custom post type
 		 * Also sets up the hooks for uninstalling the post type
 		 *
-		 * @return void
+		 * @return NULL
 		 */
 		public function register() {
 
@@ -114,7 +114,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 
 			// Custom column headers
 			add_filter('manage_'.$this->post_type.'_posts_columns', array($this,'custom_column_headers'),10,2);
-			add_action('manage_'.$this->post_type.'_posts_custom_column',array($this,'custom_column_content'),10,2);
+			add_action('manage_'.$this->post_type.'_posts_custom_column', array($this,'custom_column_content'),10,2);
 			
 			// Custom Header Content
 			add_filter('in_admin_header', array($this,'custom_admin_header_content') );
@@ -345,7 +345,6 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		 * @return array
 		 */
 		public function custom_column_headers( $defaults ) {
-
 			// Only do this if there are custom fields
 			if( $this->custom_fields ) {
 			
@@ -593,9 +592,6 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 					// Start rendering the HTML
 					echo '<br><div>';
 					
-					// Render the output from the template file
-					ob_start();
-					
 					switch ($custom_field['type']) {
 	
 						case "select":
@@ -617,6 +613,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 						case "input":
 							if( $value && $custom_field['type']=='date' ) { $value = date(get_option('date_format'),$value); }
 							if( $value && $custom_field['type']=='time' ) { $value = date('g:ia',$value); }
+
 							include('templates/meta_box/text.php');
 							break;
 	
@@ -638,9 +635,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 	
 					}
 					
-					$template = ob_get_contents();
-					ob_end_clean();
-					
+										
 					echo "</div>";
 					echo "<br><hr>";
 					
@@ -715,7 +710,6 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		 * @return NULL
 		 */
 		public function save_post( $post = array() ) {
-
 			$post_array = array_merge(array(
 				'post_type' 	=> $this->post_type,
 				'post_name' 	=> '',
@@ -723,7 +717,8 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 				'post_content' 	=> '',
 				'post_status' 	=> 'pending',
 				'post_date' 	=> date('Y-m-d H:i:s'),
-			),$post);
+			), $post);
+			
 			wp_insert_post( $post_array );		
 		}
 

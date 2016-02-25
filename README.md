@@ -10,7 +10,6 @@ $type->register();
 $type->add_category('fart',array('show_admin_column'=>false));
 $type->add_tag('turd');
 $type->add_category('poop');
-$type->delete_all(1);
 $type->add_custom_fields();
 $type->custom_fields = array();
 ```

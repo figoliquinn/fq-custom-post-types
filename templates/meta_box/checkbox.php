@@ -8,7 +8,7 @@
  */
 ?>
 
-<label><b><?php print $custom_field['label'];?></b></label><br/>
+<label><b><?php print $custom_field['label'];?></b></label><br/><br/>
 
 <?php $count = 0;?>
 <?php foreach($custom_field['options'] as $val => $label): ?>

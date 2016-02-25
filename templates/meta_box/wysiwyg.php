@@ -8,5 +8,5 @@
  */
 ?>
 
-<label for="'.$name.'"><b><?php print $custom_field['label'];?></b></label><br/>
-<?php print wp_editor($value, $name);?>
+<label for="'.$name.'"><b><?php print $custom_field['label'];?></b></label><br/><br/>
+<?php print wp_editor($value, $name, array('textarea_rows' => 10));?>
