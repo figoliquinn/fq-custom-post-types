@@ -602,18 +602,17 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		 */
 		public function display_meta_box( $post ) {
 
-
 			// Only do this if there are custom fields
 			if ($this->custom_fields) {
 				
 				// Loop through each of our custom fields 
 				foreach( $this->custom_fields as $name => $custom_field ) {
-				
+					
 					// Grab the value
 					$value = get_post_meta( $post->ID, $name , true );
-	
+					
 					// Start rendering the HTML
-					echo '<br><div>';
+					echo '<br><div class="meta-field">';
 					
 					switch ($custom_field['type']) {
 	
@@ -659,10 +658,16 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 							include('templates/meta_box/image.php');
 							break;
 							
+						case 'gallery':
+							// Break apart the field into the specific images
+							$images = FQ_Custom_Post_Type::galleryToImages($value, 'thumbnail');
+							include('templates/meta_box/gallery.php');
+							break;
+							
 						case 'relationship':
 							// Get all items of that post type
 							$query = new WP_Query(array('post_type' => $custom_field['post_type'], 'post_per_page' => -1));
-							$posts = $query->get_posts();
+							$relatedPosts = $query->get_posts();
 							include('templates/meta_box/relationship.php');
 							break;
 	
@@ -693,7 +698,7 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		{
 			// If this is an autosave, our form has not been submitted, so we don't want to do anything.
 			if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) { return; }
-	
+			
 			/* OK, its safe for us to save the data now. */
 			foreach($this->custom_fields as $name => $custom_field) {
 
@@ -706,13 +711,13 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 						case "time":
 							$value = strtotime($value);
 						break;
+						
 					}
 					
 					// Save that field
 					update_post_meta( $post_id , $name , $value );
 				}
 			}
-
 		}
 
 
@@ -875,6 +880,28 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 				}
 			}
 
+		}
+		
+		
+		/**
+		 * Convert our stringified list of image ids for a gallery into an array of image urls
+		 *
+		 * @param string $gallery
+		 * @param string $name (name of the image)
+		 * 
+		 * @return array
+		 */
+		public static function galleryToImages($gallery, $name = 'original')
+		{
+			$images = array();
+			$ids = explode(',', $gallery);
+			
+			foreach ($ids as $id)
+			{
+				$images[$id] = wp_get_attachment_image_url($id, $name);
+			}
+			
+			return $images;
 		}
 
 
