@@ -8,11 +8,13 @@
  */
 ?>
 
+
 <label for="'.$name.'"><b><?php print $custom_field['label'];?></b></label><br/><br/>
 <select id="<?php print $name;?>" name="<?php print $name;?>">
-		<option>None</option>
-	<?php foreach($posts as $post): ?>
-		<option <?php if ($value == $post->ID):?>selected<?php endif;?> value="<?php print $post->ID;?>"><?php print $post->post_title;?></option>
+	<option>None</option>
+		
+	<?php foreach($relatedPosts as $relatedPost): ?>
+		<option <?php if ($value == $relatedPost->ID):?>selected<?php endif;?> value="<?php print $relatedPost->ID;?>"><?php print $relatedPost->post_title;?></option>
 	<?php endforeach;?>
 
 </select>

@@ -11,10 +11,11 @@
 	display: none;
 	float: left;
 	margin-right: 8px;
+	position: relative;
 }
 
-.fq-preview-image-wrapper:hover .fq-remove-preview-image {
-	opacity: 0.25;
+.fq-preview-image-wrapper:hover > .fq-remove-preview-image {
+	opacity: 0.75;
 }
 
 .fq-preview-image {
@@ -28,7 +29,7 @@
 
 .fq-remove-preview-image {
 	position: absolute;
-	left: 75px;
+	left: 70px;
 	background: #fff;
 	color: #313131;
 	width: 20px;
@@ -53,4 +54,13 @@
 	-webkit-box-shadow: 0 1px 3px rgba(0,0,0,0.55);
 	-moz-box-shadow: 0 1px 3px rgba(0,0,0,0.55);
 	box-shadow: 0 1px 3px rgba(0,0,0,0.55);
+}
+
+.gallery ul li {
+	float: left;
+	margin-right: 8px;
+}
+
+.gallery-template {
+	display: none;
 }
