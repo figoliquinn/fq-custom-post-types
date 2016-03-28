@@ -905,6 +905,12 @@ if( !class_exists('FQ_Custom_Post_Type') ) {
 		}
 
 
+		function install() {
+		}
+
+		function uninstall() {
+		}
+
 
 
 	} // end class
